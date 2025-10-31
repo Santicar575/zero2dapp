@@ -59,6 +59,35 @@ See the [subgraph README](./packages/subgraph/README.md) for detailed instructio
 
 Your smart contracts are located in the `contracts/` directory. Use the scripts in the `scripts/` directory to deploy them.
 
+#### Deploying to Celo Sepolia
+
+To deploy BuenaToken to Celo Sepolia testnet:
+
+1. **Get Testnet Tokens**
+
+   - Visit the [Celo Sepolia Faucet](https://faucet.celo.org/) or [Alchemy Celo Sepolia Faucet](https://sepoliafaucet.com/)
+   - Connect your wallet and request testnet CELO tokens
+   - You'll need tokens to pay for gas fees
+
+2. **Deploy Using Remix**
+
+   - Open [Remix IDE](https://remix.ethereum.org/)
+   - Connect your wallet (MetaMask) to Celo Sepolia testnet
+   - Upload and compile `contracts/BuenaToken.sol`
+   - Run `scripts/deploy_with_ethers.ts` in Remix
+   - Copy the deployed contract address
+
+3. **Update Environment Variables**
+
+   - Copy `.env.local.example` to `.env.local` in `packages/nextjs/`
+   - Set `NEXT_PUBLIC_BUENA_TOKEN_ADDRESS` to your deployed contract address
+
+4. **Update Subgraph**
+   - Update `packages/subgraph/networks.json` with your contract address
+   - Redeploy your subgraph (see [THEGRAPH.md](./THEGRAPH.md))
+
+For detailed Celo-specific instructions, see [CELO.md](./CELO.md).
+
 ## Workspace Commands
 
 The monorepo is set up with npm workspaces. You can run commands for specific packages:

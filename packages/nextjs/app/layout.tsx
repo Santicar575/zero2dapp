@@ -1,7 +1,7 @@
-import { Providers } from "./providers";
-import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
+import { Header } from "./components/Header";
 import "./globals.css";
+import { Providers } from "./providers";
 
 export const metadata = {
   title: "ZeroToDapp",
@@ -27,10 +27,10 @@ export default function RootLayout({
                   
                   if (initialTheme === 'dark') {
                     document.documentElement.classList.add('dark');
-                    document.documentElement.setAttribute('data-theme', 'dark');
+                    document.documentElement.setAttribute('data-theme', 'celo-dark');
                   } else {
                     document.documentElement.classList.remove('dark');
-                    document.documentElement.setAttribute('data-theme', 'light');
+                    document.documentElement.setAttribute('data-theme', 'celo');
                   }
                 } catch (e) {}
               })();

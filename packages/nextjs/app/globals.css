@@ -28,3 +28,30 @@ a {
   text-decoration: none;
   transition: all 0.2s ease-in-out;
 }
+
+/* Celo Theme Variables */
+:root {
+  --celo-yellow: #fcff52;
+  --celo-black: #000000;
+  --celo-gold: #fbcc5c;
+  --celo-green: #35d07f;
+  --celo-blue: #5ea33b;
+}
+
+[data-theme="celo"],
+[data-theme="celo-dark"] {
+  --p: 252 255 82; /* Celo Yellow */
+  --s: 0 0 0; /* Black */
+  --a: 251 204 92; /* Celo Gold */
+  --n: 26 26 26;
+  --b1: 255 255 255; /* Base white */
+  --b2: 245 245 245;
+  --b3: 229 229 229;
+}
+
+[data-theme="celo-dark"] {
+  --b1: 0 0 0; /* Black base */
+  --b2: 26 26 26;
+  --b3: 42 42 42;
+  --s: 255 255 255; /* White secondary for dark */
+}

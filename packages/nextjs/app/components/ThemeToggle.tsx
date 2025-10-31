@@ -16,7 +16,7 @@ export function ThemeToggle() {
     } else {
       // Check system preference
       const prefersDark = window.matchMedia(
-        "(prefers-color-scheme: dark)",
+        "(prefers-color-scheme: dark)"
       ).matches;
       const initialTheme = prefersDark ? "dark" : "light";
       setTheme(initialTheme);
@@ -28,10 +28,10 @@ export function ThemeToggle() {
     const root = document.documentElement;
     if (newTheme === "dark") {
       root.classList.add("dark");
-      root.setAttribute("data-theme", "dark");
+      root.setAttribute("data-theme", "celo-dark");
     } else {
       root.classList.remove("dark");
-      root.setAttribute("data-theme", "light");
+      root.setAttribute("data-theme", "celo");
     }
   };
 

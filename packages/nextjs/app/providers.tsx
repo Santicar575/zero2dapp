@@ -1,23 +1,23 @@
 "use client";
 
-import "@rainbow-me/rainbowkit/styles.css";
 import { getDefaultConfig, RainbowKitProvider } from "@rainbow-me/rainbowkit";
-import { WagmiProvider } from "wagmi";
-import { defineChain } from "viem";
-import {
-  mainnet,
-  polygon,
-  optimism,
-  arbitrum,
-  base,
-  sepolia,
-  celo as celoMainnet,
-} from "wagmi/chains";
+import "@rainbow-me/rainbowkit/styles.css";
 import {
   isServer,
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
+import { defineChain } from "viem";
+import { WagmiProvider } from "wagmi";
+import {
+  arbitrum,
+  base,
+  celo as celoMainnet,
+  mainnet,
+  optimism,
+  polygon,
+  sepolia,
+} from "wagmi/chains";
 
 // Override Celo mainnet with icon
 const celo = {
@@ -126,7 +126,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider initialChain={celo}>
+        <RainbowKitProvider initialChain={celoSepolia}>
           {children}
         </RainbowKitProvider>
       </QueryClientProvider>
