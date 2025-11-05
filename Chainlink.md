@@ -10,3 +10,14 @@ The token is updated to have only 2 decimal places, like fiat money, and to have
 - It will use Chainlink Data Feed ETH/USD rate to calculate how many tokens the user can buy using the Eth amount sent.
 - The contract will mint tokens to the user account.
 
+## On Celo - Example
+
+BuenoToken
+
+[0xe9689CF0Ffe9e4c6E9955f287a91697d18Ae7676]
+(https://celoscan.io/address/0xe9689cf0ffe9e4c6e9955f287a91697d18ae7676)
+
+BuenoTokenShop
+[0x0E8E76A22AbbCC4ab0B0FCf8d7b7eC0f4fB7140A]
+(https://celoscan.io/address/0xFc929B3cE0D9C618cE0146Ad228322Bc51Afb709)
+

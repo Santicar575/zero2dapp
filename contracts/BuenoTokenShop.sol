@@ -11,7 +11,7 @@ contract BuenoTokenShop {
     
 	AggregatorV3Interface internal priceFeed;
 	TokenInterface public token;
-	uint256 public tokenPrice = 200; //1 token = 2.00 usd, with 2 decimal places
+	uint256 public tokenPrice = 1; //1 token = 0.01 usd, with 2 decimal places
 	address public owner;
     
 	constructor(address tokenAddress) {
@@ -19,17 +19,14 @@ contract BuenoTokenShop {
         /**
         * https://docs.chain.link/data-feeds/price-feeds/addresses
         * 
-        * Network: Sepolia
-        * Aggregator: ETH/USD
-        * Address: 0x694AA1769357215DE4FAC081bf1f309aDC325306
-        *
         * Network: Celo
-        * Aggregator: ETH/USD
-        * Address: 0x1FcD30A73D67639c1cD89ff5746E7585731c083B
+        * Aggregator: CELO/USD
+        * Address: 0x0568fD19986748cEfF3301e55c0eb1E729E0Ab7e
+		*
+		* https://data.chain.link/feeds/celo/mainnet/celo-usd
         */
 
-        // UPDATE Network
-        priceFeed = AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306);
+        priceFeed = AggregatorV3Interface(0x0568fD19986748cEfF3301e55c0eb1E729E0Ab7e);
         owner = msg.sender;
 	}
 
@@ -55,8 +52,12 @@ contract BuenoTokenShop {
     	return amountToken;
 	} 
 
+	uint256 public lastTokenAmount;
+	uint256 public lastCeloAmount;
 	receive() external payable {
+		lastCeloAmount = msg.value;
     	uint256 amountToken = tokenAmount(msg.value);
+		lastTokenAmount = amountToken;
     	token.mint(msg.sender, amountToken);
 	}
 
@@ -65,6 +66,9 @@ contract BuenoTokenShop {
         _;
     }
 
+    function mintToken(address account, uint256 amount) public onlyOwner {
+        token.mint(account, amount);
+    } 
     function withdraw() external onlyOwner {
         payable(owner).transfer(address(this).balance);
     }    
