@@ -2,6 +2,8 @@
 
 This guide will walk you through deploying a subgraph to The Graph Studio and integrating it with your Next.js application.
 
+> 💡 **Need help?** The complete solution is available on the [`the-graph-solved`](https://github.com/ryestew/zero2dapp/tree/the-graph-solved) branch.
+
 ## 🎯 Workshop Overview
 
 You have a **BuenoToken** contract deployed on Celo mainnet that uses **AccessControl** for role-based permissions. The subgraph configuration is already set up correctly to index the contract's events.
@@ -330,7 +332,7 @@ const query = gql`
 `;
 
 const url = process.env.NEXT_PUBLIC_SUBGRAPH_URL || "";
-const headers = process.env.NEXT_PUBLIC_GRAPH_API_KEY
+const headers: Record<string, string> = process.env.NEXT_PUBLIC_GRAPH_API_KEY
   ? { Authorization: `Bearer ${process.env.NEXT_PUBLIC_GRAPH_API_KEY}` }
   : {};
 
@@ -691,7 +693,7 @@ const query = gql`
 `;
 
 const url = process.env.NEXT_PUBLIC_SUBGRAPH_URL || "";
-const headers = process.env.NEXT_PUBLIC_GRAPH_API_KEY
+const headers: Record<string, string> = process.env.NEXT_PUBLIC_GRAPH_API_KEY
   ? { Authorization: `Bearer ${process.env.NEXT_PUBLIC_GRAPH_API_KEY}` }
   : {};
 
@@ -770,7 +772,7 @@ const query = gql`
 
 export async function GET() {
   const url = process.env.SUBGRAPH_URL!; // Server-side only!
-  const headers = process.env.GRAPH_API_KEY
+  const headers: Record<string, string> = process.env.GRAPH_API_KEY
     ? { Authorization: `Bearer ${process.env.GRAPH_API_KEY}` }
     : {};
 
