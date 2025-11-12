@@ -3,7 +3,7 @@ import {
   EIP712DomainChanged as EIP712DomainChangedEvent,
   OwnershipTransferred as OwnershipTransferredEvent,
   Transfer as TransferEvent
-} from "../generated/BuenaToken/BuenaToken"
+} from "../generated/BuenoToken/BuenoToken"
 import {
   Approval,
   EIP712DomainChanged,

@@ -8,8 +8,8 @@ import {
 } from "matchstick-as/assembly/index"
 import { Address, BigInt } from "@graphprotocol/graph-ts"
 import { Approval } from "../generated/schema"
-import { Approval as ApprovalEvent } from "../generated/BuenaToken/BuenaToken"
-import { handleApproval } from "../src/buena-token"
+import { Approval as ApprovalEvent } from "../generated/BuenoToken/BuenoToken"
+import { handleApproval } from "../src/bueno-token"
 import { createApprovalEvent } from "./buena-token-utils"
 
 // Tests structure (matchstick-as >=0.5.0)

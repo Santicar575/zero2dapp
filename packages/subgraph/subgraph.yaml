@@ -5,12 +5,12 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum
-    name: BuenaToken
-    network: celo-sepolia
+    name: BuenoToken
+    network: celo
     source:
-      address: "0xa0304b26DEb6C0D12416F4bDbB09e52e6f800A1F"
-      abi: BuenaToken
-      startBlock: 7209007
+      address: "0xCFA45ECA955dd195b5b5Fc0E40d1A1B06f16793C"
+      abi: BuenoToken
+      startBlock: 50636395
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
@@ -21,8 +21,8 @@ dataSources:
         - OwnershipTransferred
         - Transfer
       abis:
-        - name: BuenaToken
-          file: ./abis/BuenaToken.json
+        - name: BuenoToken
+          file: ./abis/BuenoToken.json
       eventHandlers:
         - event: Approval(indexed address,indexed address,uint256)
           handler: handleApproval
@@ -32,4 +32,4 @@ dataSources:
           handler: handleOwnershipTransferred
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
-      file: ./src/buena-token.ts
+      file: ./src/bueno-token.ts
