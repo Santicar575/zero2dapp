@@ -1,15 +1,28 @@
-# The Graph Integration Guide
+# The Graph Integration Guide - BuenoToken Workshop
 
-This guide will walk you through deploying a subgraph to The Graph and integrating it with your Next.js application to fetch and display blockchain data.
+This guide will walk you through configuring a subgraph for the BuenoToken contract and integrating it with the Next.js application.
+
+## 🎯 Workshop Overview
+
+You have a **BuenoToken** contract deployed on Celo mainnet that uses **AccessControl** for role-based permissions. The subgraph configuration currently has Ownable events configured, but the contract actually uses AccessControl events.
+
+**Your mission**: Update the subgraph to correctly index AccessControl events and implement the frontend to display the data.
+
+## 📝 Contract Information
+
+- **Contract**: BuenoToken (AccessControl-based)
+- **Address**: `0xCFA45ECA955dd195b5b5Fc0E40d1A1B06f16793C`
+- **Network**: Celo Mainnet
+- **Block Explorer**: https://celoscan.io/address/0xCFA45ECA955dd195b5b5Fc0E40d1A1B06f16793C
+- **Start Block**: `50636395`
 
 ## 📦 Prerequisites
 
-1. A deployed smart contract on a blockchain (Ethereum, Polygon, Celo, etc.)
-2. Your contract's address and ABI
-3. [The Graph CLI](https://github.com/graphprotocol/graph-cli) installed globally
-4. A [Subgraph Studio](https://thegraph.com/studio/) account
+1. [The Graph CLI](https://github.com/graphprotocol/graph-cli) installed globally
+2. A [Subgraph Studio](https://thegraph.com/studio/) account
+3. Basic understanding of GraphQL and The Graph protocol
 
-## 📋 Part 1: Deploy Your Subgraph
+## 📋 Part 1: Fix the Subgraph Configuration
 
 ### Step 0: Install The Graph CLI
 
@@ -19,103 +32,127 @@ If you haven't already, install The Graph CLI globally:
 npm install -g @graphprotocol/graph-cli
 ```
 
-### Step 1: Initialize Your Subgraph
+### Step 1: Analyze the Contract
 
-Navigate to the subgraph package in this monorepo:
+First, inspect the deployed contract on Celoscan:
+https://celoscan.io/address/0xCFA45ECA955dd195b5b5Fc0E40d1A1B06f16793C#code
 
-```bash
-cd packages/subgraph
-```
+Notice that the contract uses **AccessControl**, not Ownable. It emits these events:
+- `RoleGranted` - when a role is granted to an account
+- `RoleRevoked` - when a role is revoked from an account  
+- `RoleAdminChanged` - when a role's admin is changed
+- `Transfer` - standard ERC20 transfer
+- `Approval` - standard ERC20 approval
 
-Initialize a new subgraph:
+The current subgraph configuration is set up for Ownable events, which won't work!
 
-```bash
-graph init
-```
+### Step 2: Update subgraph.yaml
 
-You'll be prompted to provide:
-
-- **Protocol**: Choose your blockchain (ethereum, polygon, celo, etc.)
-- **Subgraph name**: Choose a name for your subgraph
-- **Directory**: Press enter to use the current directory
-- **Ethereum network**: Choose your network (mainnet, sepolia, celo-alfajores, etc.)
-- **Contract address**: Enter your deployed smart contract address
-- **Start block** (optional): The block number where your contract was deployed (for faster syncing)
-- **Contract name**: A name to reference your contract in the code
-- **Index events as entities**: Yes (recommended)
-
-This will generate the following files:
-
-- `subgraph.yaml` - Main configuration file
-- `schema.graphql` - GraphQL schema defining your entities
-- `src/mapping.ts` - Event handlers
-- `networks.json` - Network configurations
-
-### Step 2: Update Your Contract Address
-
-If you need to change the contract address later, edit `subgraph.yaml`:
+Navigate to `packages/subgraph/` and update `subgraph.yaml` to configure the correct events:
 
 ```yaml
+specVersion: 1.3.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
 dataSources:
   - kind: ethereum
-    name: YourContract
-    network: celo-alfajores # or your chosen network
+    name: BuenoToken
+    network: celo
     source:
-      address: "0xYourContractAddress" # Update this with your contract address
-      abi: YourContract
-      startBlock: 12345678 # Optional: block number when contract was deployed
+      address: "0xCFA45ECA955dd195b5b5Fc0E40d1A1B06f16793C"
+      abi: BuenoToken
+      startBlock: 50636395
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
-        - Transfer
         - Approval
+        - RoleAdminChanged
+        - RoleGranted
+        - RoleRevoked
+        - Transfer
       abis:
-        - name: YourContract
-          file: ./abis/YourContract.json
+        - name: BuenoToken
+          file: ./abis/BuenoToken.json
       eventHandlers:
-        - event: Transfer(indexed address,indexed address,uint256)
-          handler: handleTransfer
         - event: Approval(indexed address,indexed address,uint256)
           handler: handleApproval
-      file: ./src/mapping.ts
+        - event: RoleAdminChanged(indexed bytes32,indexed bytes32,indexed bytes32)
+          handler: handleRoleAdminChanged
+        - event: RoleGranted(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleGranted
+        - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleRevoked
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+      file: ./src/bueno-token.ts
 ```
 
-### Step 3: Define Your Schema
+**Key changes:**
+- Replace `EIP712DomainChanged` and `OwnershipTransferred` entities
+- Add `RoleAdminChanged`, `RoleGranted`, and `RoleRevoked` entities
+- Update event handlers to match AccessControl events
 
-Edit `schema.graphql` to define the entities you want to index. For example:
+### Step 3: Update Your Schema
+
+Edit `schema.graphql` to replace Ownable entities with AccessControl entities:
 
 ```graphql
-type Transfer @entity {
-  id: ID!
-  from: Bytes!
-  to: Bytes!
-  value: BigInt!
+type Approval @entity(immutable: true) {
+  id: Bytes!
+  owner: Bytes! # address
+  spender: Bytes! # address
+  value: BigInt! # uint256
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
 
-type Approval @entity {
-  id: ID!
-  owner: Bytes!
-  spender: Bytes!
-  value: BigInt!
+type RoleAdminChanged @entity(immutable: true) {
+  id: Bytes!
+  role: Bytes! # bytes32
+  previousAdminRole: Bytes! # bytes32
+  newAdminRole: Bytes! # bytes32
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
 
-type OwnershipTransferred @entity {
-  id: ID!
-  previousOwner: Bytes!
-  newOwner: Bytes!
+type RoleGranted @entity(immutable: true) {
+  id: Bytes!
+  role: Bytes! # bytes32
+  account: Bytes! # address
+  sender: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RoleRevoked @entity(immutable: true) {
+  id: Bytes!
+  role: Bytes! # bytes32
+  account: Bytes! # address
+  sender: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Transfer @entity(immutable: true) {
+  id: Bytes!
+  from: Bytes! # address
+  to: Bytes! # address
+  value: BigInt! # uint256
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
 ```
+
+**Remove** the old `OwnershipTransferred` and `EIP712DomainChanged` types!
 
 ### Step 4: Generate Code
 
@@ -127,43 +164,93 @@ graph codegen
 
 This creates type definitions in `generated/` that you'll use in your mappings.
 
-### Step 5: Write Event Handlers
+### Step 5: Update Event Handlers
 
-Update `src/mapping.ts` with your event handlers:
+Update `src/bueno-token.ts` with handlers for AccessControl events:
 
 ```typescript
 import {
-  Transfer as TransferEvent,
   Approval as ApprovalEvent,
-} from "../generated/YourContract/YourContract";
-import { Transfer, Approval } from "../generated/schema";
-
-export function handleTransfer(event: TransferEvent): void {
-  let entity = new Transfer(
-    event.transaction.hash.concatI32(event.logIndex.toI32()),
-  );
-  entity.from = event.params.from;
-  entity.to = event.params.to;
-  entity.value = event.params.value;
-  entity.blockNumber = event.block.number;
-  entity.blockTimestamp = event.block.timestamp;
-  entity.transactionHash = event.transaction.hash;
-  entity.save();
-}
+  RoleAdminChanged as RoleAdminChangedEvent,
+  RoleGranted as RoleGrantedEvent,
+  RoleRevoked as RoleRevokedEvent,
+  Transfer as TransferEvent
+} from "../generated/BuenoToken/BuenoToken"
+import {
+  Approval,
+  RoleAdminChanged,
+  RoleGranted,
+  RoleRevoked,
+  Transfer
+} from "../generated/schema"
 
 export function handleApproval(event: ApprovalEvent): void {
   let entity = new Approval(
-    event.transaction.hash.concatI32(event.logIndex.toI32()),
-  );
-  entity.owner = event.params.owner;
-  entity.spender = event.params.spender;
-  entity.value = event.params.value;
-  entity.blockNumber = event.block.number;
-  entity.blockTimestamp = event.block.timestamp;
-  entity.transactionHash = event.transaction.hash;
-  entity.save();
+    event.transaction.hash.concatI32(event.logIndex.toI32())
+  )
+  entity.owner = event.params.owner
+  entity.spender = event.params.spender
+  entity.value = event.params.value
+  entity.blockNumber = event.block.number
+  entity.blockTimestamp = event.block.timestamp
+  entity.transactionHash = event.transaction.hash
+  entity.save()
+}
+
+export function handleRoleAdminChanged(event: RoleAdminChangedEvent): void {
+  let entity = new RoleAdminChanged(
+    event.transaction.hash.concatI32(event.logIndex.toI32())
+  )
+  entity.role = event.params.role
+  entity.previousAdminRole = event.params.previousAdminRole
+  entity.newAdminRole = event.params.newAdminRole
+  entity.blockNumber = event.block.number
+  entity.blockTimestamp = event.block.timestamp
+  entity.transactionHash = event.transaction.hash
+  entity.save()
+}
+
+export function handleRoleGranted(event: RoleGrantedEvent): void {
+  let entity = new RoleGranted(
+    event.transaction.hash.concatI32(event.logIndex.toI32())
+  )
+  entity.role = event.params.role
+  entity.account = event.params.account
+  entity.sender = event.params.sender
+  entity.blockNumber = event.block.number
+  entity.blockTimestamp = event.block.timestamp
+  entity.transactionHash = event.transaction.hash
+  entity.save()
+}
+
+export function handleRoleRevoked(event: RoleRevokedEvent): void {
+  let entity = new RoleRevoked(
+    event.transaction.hash.concatI32(event.logIndex.toI32())
+  )
+  entity.role = event.params.role
+  entity.account = event.params.account
+  entity.sender = event.params.sender
+  entity.blockNumber = event.block.number
+  entity.blockTimestamp = event.block.timestamp
+  entity.transactionHash = event.transaction.hash
+  entity.save()
+}
+
+export function handleTransfer(event: TransferEvent): void {
+  let entity = new Transfer(
+    event.transaction.hash.concatI32(event.logIndex.toI32())
+  )
+  entity.from = event.params.from
+  entity.to = event.params.to
+  entity.value = event.params.value
+  entity.blockNumber = event.block.number
+  entity.blockTimestamp = event.block.timestamp
+  entity.transactionHash = event.transaction.hash
+  entity.save()
 }
 ```
+
+**Remove** the old `handleOwnershipTransferred` and `handleEIP712DomainChanged` handlers!
 
 ### Step 6: Create a Subgraph in Studio
 
@@ -228,11 +315,27 @@ Use the Playground in Subgraph Studio to test queries:
     to
     value
     blockNumber
+    blockTimestamp
+  }
+  roleGranteds(first: 5) {
+    id
+    role
+    account
+    sender
+    blockNumber
+  }
+  roleRevokeds(first: 5) {
+    id
+    role
+    account
+    sender
   }
 }
 ```
 
 Once you see data returning, your subgraph is ready to integrate with the frontend!
+
+**Note**: BuenoToken uses 2 decimals, so token values need to be divided by 100, not 1e18!
 
 ---
 
@@ -359,32 +462,47 @@ import { gql, request } from "graphql-request";
 
 const query = gql`
   {
-    transfers(first: 10) {
+    transfers(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
       id
-      to
-      transactionHash
-      value
       from
-      blockTimestamp
-      blockNumber
-    }
-    ownershipTransferreds(first: 10) {
+      to
+      value
       blockNumber
       blockTimestamp
-      id
-      newOwner
       transactionHash
-      previousOwner
     }
-    approvals(first: 5) {
+    approvals(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
       id
       owner
       spender
       value
+      blockNumber
+      blockTimestamp
       transactionHash
     }
-    eip712DomainChangeds(first: 5) {
+    roleGranteds(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
       id
+      role
+      account
+      sender
+      blockNumber
+      blockTimestamp
+      transactionHash
+    }
+    roleRevokeds(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
+      id
+      role
+      account
+      sender
+      blockNumber
+      blockTimestamp
+      transactionHash
+    }
+    roleAdminChangeds(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
+      id
+      role
+      previousAdminRole
+      newAdminRole
       blockNumber
       blockTimestamp
       transactionHash
@@ -442,6 +560,14 @@ export default function SubgraphData() {
     return new Date(parseInt(timestamp) * 1000).toLocaleString();
   };
 
+  const formatRole = (role: string) => {
+    const roleNames: { [key: string]: string } = {
+      "0x0000000000000000000000000000000000000000000000000000000000000000": "DEFAULT_ADMIN",
+      "0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6": "MINTER_ROLE",
+    };
+    return roleNames[role] || `${role.slice(0, 10)}...${role.slice(-8)}`;
+  };
+
   return (
     <div className="space-y-12">
       {/* Transfers */}
@@ -470,7 +596,7 @@ export default function SubgraphData() {
                       {formatAddress(transfer.to)}
                     </td>
                     <td className="font-semibold">
-                      {(parseInt(transfer.value) / 1e18).toFixed(4)}
+                      {(parseInt(transfer.value) / 100).toFixed(2)} BTK
                     </td>
                     <td>{transfer.blockNumber}</td>
                     <td className="font-mono text-sm">
@@ -492,46 +618,97 @@ export default function SubgraphData() {
         </div>
       </div>
 
-      {/* Ownership Transferred */}
+      {/* Roles Granted */}
       <div className="card bg-base-200 shadow-xl border border-base-300">
         <div className="card-body p-8">
-          <h2 className="card-title text-3xl mb-6">👑 Ownership Transfers</h2>
+          <h2 className="card-title text-3xl mb-6">✨ Roles Granted</h2>
           <div className="overflow-x-auto">
             <table className="table table-zebra w-full">
               <thead>
                 <tr>
-                  <th>Previous Owner</th>
-                  <th>New Owner</th>
+                  <th>Role</th>
+                  <th>Account</th>
+                  <th>Sender</th>
                   <th>Block</th>
                   <th>Transaction</th>
                   <th>Timestamp</th>
                 </tr>
               </thead>
               <tbody>
-                {data?.ownershipTransferreds?.map((transfer: any) => (
-                  <tr key={transfer.id}>
+                {data?.roleGranteds?.map((event: any) => (
+                  <tr key={event.id}>
                     <td className="font-mono text-sm">
-                      {formatAddress(transfer.previousOwner)}
+                      {formatRole(event.role)}
                     </td>
                     <td className="font-mono text-sm">
-                      {formatAddress(transfer.newOwner)}
+                      {formatAddress(event.account)}
                     </td>
-                    <td>{transfer.blockNumber}</td>
                     <td className="font-mono text-sm">
-                      {formatAddress(transfer.transactionHash)}
+                      {formatAddress(event.sender)}
+                    </td>
+                    <td>{event.blockNumber}</td>
+                    <td className="font-mono text-sm">
+                      {formatAddress(event.transactionHash)}
                     </td>
                     <td className="text-sm opacity-70">
-                      {formatTimestamp(transfer.blockTimestamp)}
+                      {formatTimestamp(event.blockTimestamp)}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          {(!data?.ownershipTransferreds ||
-            data.ownershipTransferreds.length === 0) && (
+          {(!data?.roleGranteds || data.roleGranteds.length === 0) && (
             <div className="text-center py-8 opacity-60">
-              <p>No ownership transfers found</p>
+              <p>No roles granted found</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Roles Revoked */}
+      <div className="card bg-base-200 shadow-xl border border-base-300">
+        <div className="card-body p-8">
+          <h2 className="card-title text-3xl mb-6">🚫 Roles Revoked</h2>
+          <div className="overflow-x-auto">
+            <table className="table table-zebra w-full">
+              <thead>
+                <tr>
+                  <th>Role</th>
+                  <th>Account</th>
+                  <th>Sender</th>
+                  <th>Block</th>
+                  <th>Transaction</th>
+                  <th>Timestamp</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data?.roleRevokeds?.map((event: any) => (
+                  <tr key={event.id}>
+                    <td className="font-mono text-sm">
+                      {formatRole(event.role)}
+                    </td>
+                    <td className="font-mono text-sm">
+                      {formatAddress(event.account)}
+                    </td>
+                    <td className="font-mono text-sm">
+                      {formatAddress(event.sender)}
+                    </td>
+                    <td>{event.blockNumber}</td>
+                    <td className="font-mono text-sm">
+                      {formatAddress(event.transactionHash)}
+                    </td>
+                    <td className="text-sm opacity-70">
+                      {formatTimestamp(event.blockTimestamp)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {(!data?.roleRevokeds || data.roleRevokeds.length === 0) && (
+            <div className="text-center py-8 opacity-60">
+              <p>No roles revoked found</p>
             </div>
           )}
         </div>
@@ -561,7 +738,7 @@ export default function SubgraphData() {
                       {formatAddress(approval.spender)}
                     </td>
                     <td className="font-semibold">
-                      {(parseInt(approval.value) / 1e18).toFixed(4)}
+                      {(parseInt(approval.value) / 100).toFixed(2)} BTK
                     </td>
                     <td className="font-mono text-sm">
                       {formatAddress(approval.transactionHash)}
@@ -579,24 +756,34 @@ export default function SubgraphData() {
         </div>
       </div>
 
-      {/* EIP712 Domain Changed */}
+      {/* Role Admin Changed */}
       <div className="card bg-base-200 shadow-xl border border-base-300">
         <div className="card-body p-8">
-          <h2 className="card-title text-3xl mb-6">🔐 EIP712 Domain Changes</h2>
+          <h2 className="card-title text-3xl mb-6">🔐 Role Admin Changes</h2>
           <div className="overflow-x-auto">
             <table className="table table-zebra w-full">
               <thead>
                 <tr>
-                  <th>ID</th>
+                  <th>Role</th>
+                  <th>Previous Admin</th>
+                  <th>New Admin</th>
                   <th>Block</th>
                   <th>Transaction</th>
                   <th>Timestamp</th>
                 </tr>
               </thead>
               <tbody>
-                {data?.eip712DomainChangeds?.map((event: any) => (
+                {data?.roleAdminChangeds?.map((event: any) => (
                   <tr key={event.id}>
-                    <td className="font-mono text-sm">{event.id}</td>
+                    <td className="font-mono text-sm">
+                      {formatRole(event.role)}
+                    </td>
+                    <td className="font-mono text-sm">
+                      {formatRole(event.previousAdminRole)}
+                    </td>
+                    <td className="font-mono text-sm">
+                      {formatRole(event.newAdminRole)}
+                    </td>
                     <td>{event.blockNumber}</td>
                     <td className="font-mono text-sm">
                       {formatAddress(event.transactionHash)}
@@ -609,10 +796,9 @@ export default function SubgraphData() {
               </tbody>
             </table>
           </div>
-          {(!data?.eip712DomainChangeds ||
-            data.eip712DomainChangeds.length === 0) && (
+          {(!data?.roleAdminChangeds || data.roleAdminChangeds.length === 0) && (
             <div className="text-center py-8 opacity-60">
-              <p>No domain changes found</p>
+              <p>No role admin changes found</p>
             </div>
           )}
         </div>
@@ -637,32 +823,47 @@ import SubgraphData from "./components/SubgraphData";
 
 const query = gql`
   {
-    transfers(first: 10) {
+    transfers(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
       id
-      to
-      transactionHash
-      value
       from
-      blockTimestamp
-      blockNumber
-    }
-    ownershipTransferreds(first: 10) {
+      to
+      value
       blockNumber
       blockTimestamp
-      id
-      newOwner
       transactionHash
-      previousOwner
     }
-    approvals(first: 5) {
+    approvals(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
       id
       owner
       spender
       value
+      blockNumber
+      blockTimestamp
       transactionHash
     }
-    eip712DomainChangeds(first: 5) {
+    roleGranteds(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
       id
+      role
+      account
+      sender
+      blockNumber
+      blockTimestamp
+      transactionHash
+    }
+    roleRevokeds(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
+      id
+      role
+      account
+      sender
+      blockNumber
+      blockTimestamp
+      transactionHash
+    }
+    roleAdminChangeds(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
+      id
+      role
+      previousAdminRole
+      newAdminRole
       blockNumber
       blockTimestamp
       transactionHash
