@@ -15,6 +15,14 @@ NEXT_PUBLIC_SUBGRAPH_URL=
 # The Graph API Key (Optional)
 # For production, get an API key from Subgraph Studio
 NEXT_PUBLIC_GRAPH_API_KEY=
+
+# BuenoToken Contract Address
+NEXT_PUBLIC_BUENO_TOKEN_ADDRESS=DEPLOYED_CONTRACT_ADDRESS_HERE
+
+# Self Protocol Configuration
+NEXT_PUBLIC_SELF_APP_NAME=ZeroToDapp
+NEXT_PUBLIC_SELF_ENDPOINT=DEPLOYED_CONTRACT_ADDRESS_HERE
+NEXT_PUBLIC_SELF_SCOPE_SEED=zero2dapp-verification
 ```
 
 ## Required Variables
@@ -42,5 +50,22 @@ For production deployments with higher rate limits:
 2. Navigate to the API Keys section
 3. Create a new API key
 4. Copy and paste it here
+
+
+### NEXT_PUBLIC_BUENO_TOKEN_ADDRESS
+
+1. Deploy the BuenoToken contract following the instructions in `CELO.md` or `SELF.md`
+2. Copy the deployed contract address (use lowercase version)
+3. Paste it here
+
+### Self Protocol Configuration
+
+The following variables are required for Self Protocol identity verification:
+
+- **NEXT_PUBLIC_SELF_APP_NAME**: Your Self Protocol app name (default: "ZeroToDapp")
+- **NEXT_PUBLIC_SELF_ENDPOINT**: Contract address **must be lowercase** (e.g., `0x22bc4604d67b4e3e15e3e30cc5449de02dbd8192`)
+- **NEXT_PUBLIC_SELF_SCOPE_SEED**: Scope seed for verification (must match contract deployment exactly, default: "zero2dapp-verification")
+
+**Critical:** The scope seed in `NEXT_PUBLIC_SELF_SCOPE_SEED` must exactly match the scope seed used when deploying the contract, and the contract address in `NEXT_PUBLIC_SELF_ENDPOINT` must be lowercase.
 
 ⚠️ **Important**: Never commit your `.env.local` file to version control. It's already included in `.gitignore`.

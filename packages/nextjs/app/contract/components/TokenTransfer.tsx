@@ -1,17 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { isAddress, parseEther } from "viem";
+import { isAddress, parseUnits } from "viem";
 import {
   useAccount,
   useReadContract,
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
+import Link from "next/link";
 import buenoTokenAbi from "../../../../../artifacts/BuenoToken.json";
 import { normalize } from "viem/ens";
 import { getEnsAddress } from "viem/actions";
 import { mainnetEnsClient } from "../../lib/ensClient";
+import { useSelfVerification } from "../../self/lib/useSelfVerification";
 
 const CONTRACT_ADDRESS = process.env
   .NEXT_PUBLIC_BUENO_TOKEN_ADDRESS as `0x${string}`;
@@ -20,6 +22,7 @@ const hasENSShape = (input: string) => input.includes(".") && input.length > 2;
 
 export function TokenTransfer() {
   const { address, isConnected } = useAccount();
+  const { isVerified, isLoading: isCheckingVerification } = useSelfVerification();
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
   const [isMinting, setIsMinting] = useState(false);
@@ -50,17 +53,35 @@ export function TokenTransfer() {
       hash: mintHash,
     });
 
-  // Check if user is owner
-  const { data: owner } = useReadContract({
+  // Check if user has MINTER_ROLE
+  // MINTER_ROLE = keccak256("MINTER_ROLE") = 0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6
+  const MINTER_ROLE = "0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6";
+  
+  // AccessControl hasRole function ABI (not always in compiled ABI)
+  const hasRoleAbi = [
+    {
+      inputs: [
+        { internalType: "bytes32", name: "role", type: "bytes32" },
+        { internalType: "address", name: "account", type: "address" },
+      ],
+      name: "hasRole",
+      outputs: [{ internalType: "bool", name: "", type: "bool" }],
+      stateMutability: "view",
+      type: "function",
+    },
+  ] as const;
+  
+  const { data: hasMinterRole } = useReadContract({
     address: CONTRACT_ADDRESS,
-    abi: buenoTokenAbi.abi as any,
-    functionName: "owner",
+    abi: hasRoleAbi,
+    functionName: "hasRole",
+    args: address ? [MINTER_ROLE as `0x${string}`, address] : undefined,
+    query: {
+      enabled: isConnected && !!address,
+    },
   });
 
-  const isOwner =
-    owner && address
-      ? (owner as string).toLowerCase() === address.toLowerCase()
-      : false;
+  const isOwner = (hasMinterRole as boolean) || false;
 
   const handleTransfer = async () => {
     let resolvedRecipient = recipient;
@@ -98,7 +119,7 @@ export function TokenTransfer() {
         address: CONTRACT_ADDRESS,
         abi: buenoTokenAbi.abi as any,
         functionName: "transfer",
-        args: [resolvedRecipient as `0x${string}`, parseEther(amount)],
+        args: [resolvedRecipient as `0x${string}`, parseUnits(amount, 2)], // BuenoToken uses 2 decimals
       });
     } catch (error) {
       console.error("Transfer error:", error);
@@ -121,7 +142,7 @@ export function TokenTransfer() {
         address: CONTRACT_ADDRESS,
         abi: buenoTokenAbi.abi as any,
         functionName: "mint",
-        args: [mintRecipient as `0x${string}`, parseEther(mintAmount)],
+        args: [mintRecipient as `0x${string}`, parseUnits(mintAmount, 2)], // BuenoToken uses 2 decimals
       });
     } catch (error) {
       console.error("Mint error:", error);
@@ -169,6 +190,62 @@ export function TokenTransfer() {
 
   return (
     <div className="space-y-6">
+      {/* Verification Status */}
+      {isConnected && !isCheckingVerification && (
+        <div className="card bg-base-200 shadow-xl border border-base-300">
+          <div className="card-body">
+            {isVerified ? (
+              <div className="alert alert-success">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="stroke-current shrink-0 h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <div className="flex-1">
+                  <h3 className="font-bold">✅ Identity Verified</h3>
+                  <p className="text-sm">
+                    You have completed verification and received your 100 tokens. Verification is one-time only per address.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="alert alert-warning">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  className="stroke-current shrink-0 w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+                <div className="flex-1">
+                  <h3 className="font-bold">🔐 Verification Required</h3>
+                  <p className="text-sm mb-2">
+                    To receive 100 tokens, you need to verify your identity first. You must prove you are a real person and over 18 years old.
+                  </p>
+                  <Link href="/self" className="btn btn-primary btn-sm text-white">
+                    Go to Verification Page
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Transfer Tokens */}
       <div className="card bg-base-200 shadow-xl border border-base-300">
         <div className="card-body space-y-4">
