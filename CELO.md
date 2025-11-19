@@ -1,6 +1,6 @@
 # Celo Integration Guide
 
-Complete guide for deploying BuenoToken on Celo Sepolia and integrating Celo branding and contract interaction functionality.
+Complete guide for deploying BuenoToken on Celo Mainnet and integrating Celo branding and contract interaction functionality.
 
 ## 📋 Table of Contents
 
@@ -19,12 +19,12 @@ Complete guide for deploying BuenoToken on Celo Sepolia and integrating Celo bra
 
 This integration adds:
 
-- BuenoToken contract deployment on Celo Sepolia testnet
+- BuenoToken contract deployment on Celo Mainnet testnet
 - Frontend contract interaction page (`/contract`)
 - Token balance display and transfer functionality
 - Token ownership display from subgraph data
 - Celo branding theme (black and yellow) applied globally
-- Celo Sepolia as the default network
+- Celo Mainnet as the default network
 
 ## 🔄 What Was Changed
 
@@ -50,17 +50,17 @@ This integration adds:
 
    - `packages/nextjs/tailwind.config.ts` - Added Celo theme (black/yellow colors)
    - `packages/nextjs/app/globals.css` - Added Celo theme CSS variables
-   - `packages/nextjs/app/providers.tsx` - Set Celo Sepolia as default chain
+   - `packages/nextjs/app/providers.tsx` - Set Celo Mainnet as default chain
    - `packages/nextjs/app/layout.tsx` - Applied Celo theme
    - `packages/nextjs/app/components/ThemeToggle.tsx` - Updated to use Celo themes
    - `packages/nextjs/app/components/Header.tsx` - Added Contract navigation link
 
 3. **Documentation**
-   - `README.md` - Added Celo Sepolia deployment instructions
+   - `README.md` - Added Celo Mainnet deployment instructions
 
 ## 🚰 Getting CELO Tokens
 
-Before deploying your contract, you'll need CELO tokens on Celo Mainnet testnet to pay for gas fees.
+Before deploying your contract, you'll need CELO tokens on Celo Mainnet to pay for gas fees.
 
 ### Faucet Drops
 
@@ -69,7 +69,9 @@ Get your CELO tokens at [FaucetDrops](https://faucetdrops.io/faucet/0xb34D25c41d
 
 ### Adding Celo to MetaMask
 
-If you haven't added Celo Sepolia to MetaMask yet:
+If you haven't added Celo Mainnet to MetaMask yet:
+
+Add Celo to your MetaMask on [Chainlist](https://chainlist.org/) OR:
 
 1. Open MetaMask
 2. Click the network dropdown
@@ -88,7 +90,7 @@ Block Explorer: https://celo.blockscout.com
 
 ### Prerequisites
 
-- MetaMask wallet with Celo Sepolia testnet tokens
+- MetaMask wallet with Celo Mainnet testnet tokens
 - Remix IDE account (or use locally)
 
 ### Deployment Steps
@@ -100,7 +102,7 @@ Block Explorer: https://celo.blockscout.com
 2. **Connect Your Wallet**
 
    - Click the MetaMask icon in Remix
-   - Ensure you're connected to **Celo Sepolia** network
+   - Ensure you're connected to **Celo Mainnet** network
    - Make sure you have testnet tokens
 
 3. **Upload Contract**
@@ -138,10 +140,10 @@ The deployment script (`scripts/deploy_with_ethers.ts`) has been updated to auto
 import { deploy } from "./ethers-lib";
 
 /**
- * Deploy BuenoToken contract to Celo Sepolia
+ * Deploy BuenoToken contract to Celo Mainnet
  *
  * Usage:
- * - Make sure you're connected to Celo Sepolia network in Remix
+ * - Make sure you're connected to Celo Mainnet network in Remix
  * - Run this script
  */
 (async () => {
@@ -243,7 +245,7 @@ export default function ContractPage() {
               BuenoToken Contract
             </h1>
             <p className="text-xl opacity-80 mb-4">
-              Interact with your BuenoToken contract on Celo Sepolia
+              Interact with your BuenoToken contract on Celo Mainnet
             </p>
             {CONTRACT_ADDRESS && (
               <div className="alert alert-info max-w-2xl mx-auto">
@@ -709,7 +711,7 @@ Added Celo theme CSS variables:
 
 **Changes Made:**
 
-Set Celo Sepolia as the initial/default chain:
+Set Celo Mainnet as the initial/default chain:
 
 ```typescript
 // ... existing imports ...
@@ -794,12 +796,12 @@ Added Contract navigation link:
 
 **Change:** Added new `<li>` with Contract link
 
-## 🌐 Celo Sepolia Network Details
+## 🌐 Celo Mainnet Network Details
 
 ### Network Information
 
-- **Network Name**: Celo Sepolia Testnet
-- **Chain ID**: `11142220`
+- **Network Name**: Celo Mainnet Testnet
+- **Chain ID**: `42220`
 - **RPC URL**: `https://forno.celo.org`
 - **Block Explorer**: [Blockscout](https://celo.blockscout.com/)
 - **Native Currency**: CELO
@@ -825,7 +827,7 @@ Added Contract navigation link:
 **Solutions**:
 
 - Ensure you have enough CELO tokens for gas (at least 0.01 CELO)
-- Check you're on Celo Sepolia network
+- Check you're on Celo Mainnet network
 - Increase gas limit in MetaMask
 - Try again after a few minutes
 
@@ -868,9 +870,9 @@ Added Contract navigation link:
 
 **Solutions**:
 
-- Ensure MetaMask is connected to Celo Sepolia
+- Ensure MetaMask is connected to Celo Mainnet
 - If prompted, approve network switch
-- Manually switch to Celo Sepolia in MetaMask
+- Manually switch to Celo Mainnet in MetaMask
 - Refresh the page after switching networks
 
 ### Transaction Stuck
@@ -887,7 +889,7 @@ Added Contract navigation link:
 ## 📚 Resources
 
 - [Celo Documentation](https://docs.celo.org/)
-- [Celo Sepolia Network Info](https://docs.celo.org/developer-resources/faucet)
+- [Celo Mainnet Network Info](https://docs.celo.org/developer-resources/faucet)
 - [Celo Block Explorer](https://celo.blockscout.com/)
 - [Remix IDE](https://remix.ethereum.org/)
 - [MetaMask Documentation](https://docs.metamask.io/)
@@ -985,8 +987,8 @@ zero2dapp/
 
 Use this checklist to verify everything is set up correctly:
 
-- [ ] Celo Sepolia testnet tokens obtained
-- [ ] BuenoToken contract deployed on Celo Sepolia
+- [ ] Celo Mainnet testnet tokens obtained
+- [ ] BuenoToken contract deployed on Celo Mainnet
 - [ ] Contract address saved
 - [ ] `.env.local` file created with all required variables
 - [ ] `NEXT_PUBLIC_BUENO_TOKEN_ADDRESS` set correctly
