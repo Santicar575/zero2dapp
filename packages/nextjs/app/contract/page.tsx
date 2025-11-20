@@ -1,6 +1,5 @@
 import { ENSProfile } from "./components/ENSProfile";
 import { TokenBalance } from "./components/TokenBalance";
-import { TokenOwnership } from "./components/TokenOwnership";
 import { TokenTransfer } from "./components/TokenTransfer";
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_BUENO_TOKEN_ADDRESS;
@@ -91,11 +90,6 @@ export default function ContractPage() {
               <TokenBalance />
               <TokenTransfer />
             </div>
-          </div>
-
-          {/* Token Ownership */}
-          <div className="mt-8">
-            <TokenOwnership />
           </div>
         </div>
       </section>

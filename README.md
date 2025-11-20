@@ -1,102 +1,140 @@
-# ZeroToDapp Monorepo
+# Zero to Dapp Devconnect Argentina
 
-A monorepo for building decentralized applications with smart contracts, a Next.js frontend, and The Graph subgraph indexing.
+This is the repo for Zero to Dapp, a workshop with seven sections:
+1. Remix
+2. The Graph(https://github.com/ryestew/zero2dapp/blob/self/THEGRAPH.md)
+3. [Celo](https://github.com/ryestew/zero2dapp/blob/self/CELO.md) 
+4. Chainlink(https://github.com/ryestew/zero2dapp/blob/self/Chainlink.md)
+5. ENS(https://github.com/ryestew/zero2dapp/blob/self/ENS.md)
+6. Uniswap(https://github.com/ryestew/zero2dapp/blob/self/UNISWAP.md)
+7. Self Protocol(https://github.com/ryestew/zero2dapp/blob/self/SELF.md)
 
-## Project Structure
+Each section will have at least one branch. 
+When there is just one branch for a section, it will contain the finished work.  When there are two branches, the first one is for starting point and the second is will contain the finished work for that section.
 
-```
-zero2dapp/
-├── packages/
-│   ├── nextjs/          # Next.js frontend application
-│   └── subgraph/        # The Graph protocol subgraph
-├── contracts/           # Smart contracts
-├── scripts/            # Deployment and utility scripts
-├── tests/              # Contract tests
-└── artifacts/          # Compiled contract artifacts
-```
 
-## Getting Started
+# Participant Quick Guide
 
-### Install Dependencies
+Welcome! This is your fast-lane overview for navigating the workshops, building your project, and submitting it for the $100 prize.
 
-From the root of the monorepo:
+---
 
-```bash
-npm install
-```
+## 1. Getting Started
 
-This will install dependencies for all packages in the monorepo.
+### Fork the Repo
 
-### Next.js Frontend
-
-Run the Next.js development server:
+Click **Fork** → clone your fork:
 
 ```bash
-npm run dev:nextjs
+git clone <your-fork-url>
+cd <repo>
+yarn install
 ```
 
-Or navigate to the package and run directly:
+---
+
+## 2. How the Workshops Work
+
+Each workshop session has a **final state branch** named after the protocol
+
+```
+- Remix (main)
+- The Graph (the-graph) - get started branch
+- The Graph (the-graph-solved) - get started branch
+- Celo (celo)
+- Chainlink (chainlink)
+- ENS (ENS)
+- Uniswap (UF)
+- Self Protocol (Self)
+```
+
+You can start building from any branch depending on when you join. As the Remix workshop does not yet come with a ready project, we recommend starting off from `the-graph` branch!!
+
+---
+
+## ⏱️ 3. If You Join Late
+
+* **Joined during first half of a session?**
+  → Check out the **previous** session branch to follow the step-by-step build, except for The Graph workshop, there you should start with `the-graph` branch.
+
+  ```bash
+  git checkout <previous-protocol-name>
+  ```
+
+* **Joined during second half or later?**
+  → Check out the **current** session’s final branch so you can jump right in.
+
+
+  ```bash
+  git checkout <current-protocol-name>
+  ```
+
+---
+
+## 🛠️ 4. Build Your Project
+
+Create a new branch in your fork:
 
 ```bash
-cd packages/nextjs
-npm run dev
+git checkout -b my-project
 ```
 
-The application will be available at [http://localhost:3000](http://localhost:3000).
+Your goal:
+**Integrate at least TWO workshop technologies** into a small project.
+Even a tiny prototype is totally valid — we want everyone to submit.
 
-### Subgraph
+---
 
-To set up your subgraph, navigate to the subgraph package and initialize:
+## 📝 5. Submit & Qualify for the $100 Prize
+
+1. Fill out this [form](https://docs.google.com/forms/d/e/1FAIpQLSe_X10BPJyEVwK-jzgd7gCou4kQx-GmPXlxccKCUBvqp1xW9g/viewform)
+2. Submit a PR to the main branch (see instructions right below)!
+
+All submissions go into a small PR to this repo:
+
+1. Create your submission folder:
 
 ```bash
-cd packages/subgraph
-graph init
+mkdir -p submissions/<your-github-handle>
 ```
 
-See the [subgraph README](./packages/subgraph/README.md) for detailed instructions.
+2. Add a `SUBMISSION.md`:
 
-### Smart Contracts
+```bash
+touch submissions/<your-github-handle>/SUBMISSION.md
+```
 
-Your smart contracts are located in the `contracts/` directory. Use the scripts in the `scripts/` directory to deploy them.
+3. Fill in:
 
-#### Deploying to Celo Mainnet
+```
+- Project name  
+- Link to your Fork/ branch
+- Workshops integrated  
+- Feedback
+```
 
-To deploy BuenoToken to Celo Mainnet:
+4. Commit + push + open a Pull Request.
 
-1. **Get Celo Tokens**
+Once your PR is open → your project is officially submitted.
 
-  Get your CELO tokens at [FaucetDrops](https://faucetdrops.io/faucet/0xb34D25c41df27D62e49f975b0E854d642c5F246E?networkId=42220). Get the code during the workshop! 
+---
 
-2. **Deploy Using Remix**
+## Prize Criteria
 
-   - Open [Remix IDE](https://remix.ethereum.org/)
-   - Connect your wallet (MetaMask) to Celo Mainnet
-   - Upload and compile `contracts/BuenoToken.sol`
-   - Run `scripts/deploy_with_ethers.ts` in Remix
-   - Copy the deployed contract address
+To qualify:
 
-3. **Update Environment Variables**
+* Submit before the deadline (6 PM, 20th of November, 2025)
+* Your project must integrate **two or more** workshop topics
+* Your project can not just be a fork of an existing project
+* Provide a working repo + a clear short description
 
-   - Copy `.env.local.example` to `.env.local` in `packages/nextjs/`
-   - Set `NEXT_PUBLIC_BUENO_TOKEN_ADDRESS` to your deployed contract address
+Winner will be randomly selected, so everyone has a chance!!!
 
-4. **Update Subgraph**
-   - Update `packages/subgraph/networks.json` with your contract address
-   - Redeploy your subgraph (see [THEGRAPH.md](./THEGRAPH.md))
+---
 
-For detailed Celo-specific instructions, see [CELO.md](./CELO.md).
+## 💬 Need Help?
 
-## Workspace Commands
+Ask any workshop lead — we’re here to support you throughout the day.
+Have fun building! 🚀
 
-The monorepo is set up with npm workspaces. You can run commands for specific packages:
 
-- `npm run dev:nextjs` - Start Next.js development server
-- `npm run build:nextjs` - Build Next.js for production
-- `npm run dev:subgraph` - Run subgraph development commands
-- `npm run build:subgraph` - Build the subgraph
-
-## Learn More
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [The Graph Documentation](https://thegraph.com/docs/)
-- [Solidity Documentation](https://docs.soliditylang.org/)
